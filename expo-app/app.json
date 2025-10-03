@@ -40,7 +40,9 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -49,7 +51,10 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "2ad07d3e-558c-438a-b4d6-5ceab589a2f3"
+        "projectId": "2ad07d3e-558c-438a-b4d6-5ceab589a2f3",
+        "privyAppId": "cmfyfazip013zla0dd7nayzyw",
+      "privyClientId": "client-WY6Qm5GgmtPHLsVFwFW6bSQYqNTjoJbpBhpnWtNqSdPBa",
+      "passkeyAssociatedDomain": "https://<your-associated-domain>"
       }
     },
     "owner": "shauray"

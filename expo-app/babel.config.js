@@ -1,22 +1,17 @@
+// babel.config.js
 module.exports = function (api) {
   api.cache(true);
-
   return {
-    presets: [['babel-preset-expo'], 'nativewind/babel'],
-
+    presets: ['babel-preset-expo'],
     plugins: [
       [
         'module-resolver',
         {
-          root: ['./'],
-
           alias: {
-            '@': './',
-            'tailwind.config': './tailwind.config.js',
+            jose: 'jose/dist/browser/index.js', // browser build for React Native
           },
         },
       ],
-      'react-native-worklets/plugin',
     ],
   };
 };
