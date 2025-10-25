@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://neondb_owner:npg_Si8k7AeYcLoK@ep-floral-pond-ahz4v8bw-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  walletAddress String   @unique
+  username      String?  @unique
+  displayName   String?
+  profileImage  String?
+  bio           String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  nfts          NFT[]
+  posts         Post[]
+  likes         Like[]
+  comments      Comment[]
+  
+  @@index([walletAddress])
+}
+
+model NFT {
+  id            String   @id @default(cuid())
+  mintAddress   String   @unique
+  metadataUri   String
+  imageUrl      String
+  name          String
+  description   String?
+  attributes    Json?    // Store traits as JSON
+  
+  ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  posts         Post[]
+  
+  @@index([ownerId])
+  @@index([mintAddress])
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  caption     String?  @db.Text
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  nftId       String
+  nft         NFT      @relation(fields: [nftId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  likes       Like[]
+  comments    Comment[]
+  
+  @@index([userId])
+  @@index([nftId])
+  @@index([createdAt])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, postId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([postId])
+  @@index([userId])
+  @@index([createdAt])
+}
