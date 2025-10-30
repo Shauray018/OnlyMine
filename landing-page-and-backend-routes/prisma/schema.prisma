@@ -1,102 +1,122 @@
+// schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://neondb_owner:npg_Si8k7AeYcLoK@ep-floral-pond-ahz4v8bw-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 }
 
 model User {
   id            String   @id @default(cuid())
   walletAddress String   @unique
-  username      String?  @unique
+  username      String   @unique
   displayName   String?
-  profileImage  String?
   bio           String?
+  avatarUrl     String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
-  nfts          NFT[]
   posts         Post[]
   likes         Like[]
-  comments      Comment[]
+  followers     Follow[] @relation("Following")
+  following     Follow[] @relation("Followers")
   
   @@index([walletAddress])
-}
-
-model NFT {
-  id            String   @id @default(cuid())
-  mintAddress   String   @unique
-  metadataUri   String
-  imageUrl      String
-  name          String
-  description   String?
-  attributes    Json?    // Store traits as JSON
-  
-  ownerId       String
-  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  posts         Post[]
-  
-  @@index([ownerId])
-  @@index([mintAddress])
+  @@index([username])
 }
 
 model Post {
-  id          String   @id @default(cuid())
-  caption     String?  @db.Text
+  id            String   @id @default(cuid())
+  userId        String
+  imageUrl      String
+  thumbnailUrl  String?
+  caption       String?
+  location      String?
+  aspectRatio   Float?   @default(1.0)
   
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Engagement metrics
+  likesCount    Int      @default(0)
+  commentsCount Int      @default(0)
+  sharesCount   Int      @default(0)
   
-  nftId       String
-  nft         NFT      @relation(fields: [nftId], references: [id], onDelete: Cascade)
+  // Trending score (calculated periodically)
+  trendingScore Float    @default(0)
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // NFT metadata
+  isMinted      Boolean  @default(false)
+  mintAddress   String?  @unique
+  mintedAt      DateTime?
+  weeklyRank    Int?
+  weekNumber    Int?     // Year + week number (e.g., 202443)
   
-  likes       Like[]
-  comments    Comment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes         Like[]
+  comments      Comment[]
   
   @@index([userId])
-  @@index([nftId])
   @@index([createdAt])
+  @@index([trendingScore])
+  @@index([weekNumber, weeklyRank])
+  @@index([isMinted])
 }
 
 model Like {
   id        String   @id @default(cuid())
-  
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
   createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   
   @@unique([userId, postId])
   @@index([postId])
   @@index([userId])
+  @@index([createdAt])
 }
 
 model Comment {
   id        String   @id @default(cuid())
-  content   String   @db.Text
-  
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
+  content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
   @@index([postId])
   @@index([userId])
-  @@index([createdAt])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model WeeklySelection {
+  id           String   @id @default(cuid())
+  weekNumber   Int      @unique // e.g., 202443
+  startDate    DateTime
+  endDate      DateTime
+  selectedAt   DateTime @default(now())
+  
+  postIds      String[] // Top 10 post IDs
+  collectionAddress String?
+  
+  @@index([weekNumber])
 }
