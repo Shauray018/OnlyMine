@@ -1,34 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import nacl from 'tweetnacl';
-import bs58 from 'bs58';
 
 export async function POST(request: NextRequest) {
   try {
-    const { walletAddress, signature, message } = await request.json();
+    const { walletAddress } = await request.json();
 
-    if (!walletAddress || !signature || !message) {
+    if (!walletAddress) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Wallet address is required' },
         { status: 400 }
       );
     }
 
-    // Verify the signature
-    const messageBytes = new TextEncoder().encode(message);
-    const signatureBytes = bs58.decode(signature);
-    const publicKeyBytes = bs58.decode(walletAddress);
-
-    const verified = nacl.sign.detached.verify(
-      messageBytes,
-      signatureBytes,
-      publicKeyBytes
-    );
-
-    if (!verified) {
+    // Basic validation - check if it looks like a valid Solana address
+    if (walletAddress.length < 32 || walletAddress.length > 44) {
       return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
+        { error: 'Invalid wallet address format' },
+        { status: 400 }
       );
     }
 
