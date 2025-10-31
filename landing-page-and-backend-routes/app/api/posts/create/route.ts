@@ -1,25 +1,25 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+// app/api/posts/create/route.ts
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateTrendingScore } from '@/lib/feed-algorithm';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const {
-    userId,
-    imageUrl,
-    caption,
-    location,
-    aspectRatio,
-  } = req.body;
-
-  if (!userId || !imageUrl) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
+export async function POST(request: NextRequest) {
   try {
+    const {
+      userId,
+      imageUrl,
+      caption,
+      location,
+      aspectRatio,
+    } = await request.json();
+
+    if (!userId || !imageUrl) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
     // Create post with initial trending score
     const post = await prisma.post.create({
       data: {
@@ -43,9 +43,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    return res.status(201).json({ post });
+    return NextResponse.json({ post }, { status: 201 });
   } catch (error) {
     console.error('Post creation error:', error);
-    return res.status(500).json({ error: 'Failed to create post' });
+    return NextResponse.json(
+      { error: 'Failed to create post' },
+      { status: 500 }
+    );
   }
 }

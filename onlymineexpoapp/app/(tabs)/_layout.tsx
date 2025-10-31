@@ -1,33 +1,49 @@
+import { CustomHeader } from '@/components/common/CustomHeader';
+import { CustomTabBar } from '@/components/common/CustomTabBar';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        headerShown: true,
+        header: () => <CustomHeader />,
+      }} 
+    >
       <Tabs.Screen
-        name="index"
+        name="feed"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Feed",
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="dailymine"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "DailyMine",
+        }}
+      />
+      <Tabs.Screen
+        name="camera"
+        options={{
+          title: "Camera",
+          headerShown: false, // Hide header on camera tab
+        }}
+      />
+      <Tabs.Screen
+        name="trending"
+        options={{
+          title: "Trending",
+        }}
+      />
+      <Tabs.Screen
+        name="wallet"
+        options={{
+          title: "wallet",
         }}
       />
     </Tabs>

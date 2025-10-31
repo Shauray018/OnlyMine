@@ -1,10 +1,9 @@
 // src/AppKitConfig.ts
-import { bitcoin, createAppKit, solana } from '@reown/appkit-react-native';
+import { createAppKit, solana, solanaDevnet } from '@reown/appkit-react-native';
 import { SolanaAdapter } from '@reown/appkit-solana-react-native';
 import "@walletconnect/react-native-compat";
 import { storage } from "./StorageUtils";
 
-import { mainnet, polygon } from 'viem/chains';
 
 const projectId = '7ac4f90671fe28d57da49c2a7dc35018';
 
@@ -12,8 +11,8 @@ const solanaAdapter = new SolanaAdapter();
 
 export const appKit = createAppKit({
   projectId,
-  networks: [mainnet, polygon, solana, bitcoin],
-  defaultNetwork: mainnet,
+  networks: [solana, solanaDevnet],
+  defaultNetwork: solanaDevnet,
   adapters: [solanaAdapter],
   
   // Required for React Native
